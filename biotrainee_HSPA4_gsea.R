@@ -254,7 +254,6 @@ dat[1:4,1:4]
 m=dat[,2]+dat[,1]/2
 logFC1=log2(dat[,2]/dat[,1]);fivenum(logFC1)
 logFC2=dat[,2]-dat[,1];fivenum(logFC2) 
-fivenum(logFC2)
 ## 这里我们也挑选基因
 table(logFC2>0.7)
 logFC2=logFC2[logFC2>0.7] 
