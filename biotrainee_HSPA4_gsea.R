@@ -5,7 +5,7 @@ library(GEOquery)
 
 # link https://www.ncbi.nlm.nih.gov/pubmed/30643287 
 # stromal cells from tumor-draining lymph nodes
-gset <-  getGEO('GSE113249', destdir="~/downloads",
+gset <-  getGEO('GSE113249', destdir="~/raw_data",
                AnnotGPL = F,     # 注释文件
                getGPL = F)       # 平台文件  
 a=gset[[1]] #
@@ -16,7 +16,7 @@ pd=pData(a) #通过查看说明书知道取对象a里的临床信息用pData
 colnames(dat)=pd$title
 dat1=dat
 
-gset <- getGEO('GSE113250', destdir="~/downloads",
+gset <- getGEO('GSE113250', destdir="~/raw_data",
                AnnotGPL = F,     ## 注释文件
                getGPL = F)       ## 平台文件  
 a=gset[[1]] #
@@ -32,18 +32,18 @@ dim(dat)
 boxplot(dat)
 # GPL21163 Agilent-074809 SurePrint G3 Mouse GE v2 8x60K Microarray [Probe Name version], from article
 #Download GPL file, put it in the current directory, and load it:
-gpl <- getGEO('GPL21163', destdir="~/downloads")
+gpl <- getGEO('GPL21163', destdir="~/raw_data")
 colnames(Table(gpl))   # Table is not somatic function
 head(Table(gpl)[,c(1,6)]) ## you need to check this , which column do you need
 probe2gene=Table(gpl)[,c(1,6)] 
-save(probe2gene,file='~/tmp/probe2gene.Rdata')
-save(dat, file = '~/tmp/dat.Rdata')
+save(probe2gene,file='~/data/probe2gene.Rdata')
+save(dat, file = '~/data/dat.Rdata')
 
 
 
 ##### load Rdata, go on analysis
-load(file='~/tmp/probe2gene.Rdata')
-load(file='~/tmp/dat.Rdata')
+load(file='~/data/probe2gene.Rdata')
+load(file='~/data/dat.Rdata')
 ids=probe2gene 
 head(ids)
 colnames(ids)=c('probe_id','symbol')  
@@ -58,13 +58,13 @@ dat=dat[ids$probe_id,] #新的ids取出probe_id这一列，将dat按照取出的
 rownames(dat)=ids$symbol#把ids的symbol这一列中的每一行给dat作为dat的行名
 dat[1:4,1:4]  #保留每个基因ID第一次出现的信息
 dim(dat)
-save(dat,file = '~/tmp/step1-output.Rdata')
+save(dat,file = '~/data/step1-output.Rdata')
 
 
 
 ################ pheatmap
 rm(list = ls())
-load(file = '~/tmp/step1-output.Rdata')
+load(file = '~/data/step1-output.Rdata')
 colnames(dat)
 dat[1:4,1:4]
 
@@ -81,7 +81,7 @@ pheatmap(dat[rownames(dat)[grepl('^Ig',rownames(dat))],])
 
 ############### gsea
 rm(list = ls())
-load(file = '~/tmp/step1-output.Rdata')
+load(file = '~/data/step1-output.Rdata')
 rownames(dat)=toupper(rownames(dat))
 m=dat[,2]+dat[,1]/2   # 为什么除以2
 m2 = dat[,2]+dat[,1]
@@ -153,14 +153,14 @@ ls("package:GO.db")
 library(org.Hs.eg.db)
 eg2go=toTable(org.Hs.egGO2ALLEGS)
 head(eg2go)
-tmp=eg2go[eg2go$go_id=='GO:0030595',]
+data=eg2go[eg2go$go_id=='GO:0030595',]
 columns(org.Hs.eg.db)
-g11=select(org.Hs.eg.db,tmp$gene_id,'SYMBOL', 'ENTREZID')[,2]
+g11=select(org.Hs.eg.db,data$gene_id,'SYMBOL', 'ENTREZID')[,2]
 g11=g11[g11 %in% rownames(dat)]
 
-tmp=eg2go[eg2go$go_id=='GO:0006959',]
+data=eg2go[eg2go$go_id=='GO:0006959',]
 columns(org.Hs.eg.db)
-g22=select(org.Hs.eg.db,tmp$gene_id,'SYMBOL', 'ENTREZID')[,2]
+g22=select(org.Hs.eg.db,data$gene_id,'SYMBOL', 'ENTREZID')[,2]
 g22=g22[g22 %in% rownames(dat)]
 pheatmap(dat[g11 ,1:2])
 pheatmap(dat[g22 ,1:2])
@@ -177,7 +177,7 @@ gseaplot(egmt,'LEUKOCYTE_CHEMOTAXIS')
 ##################R package for Y叔################
 rm(list = ls())  
 options(stringsAsFactors = F)
-load(file = '~/tmp/step1-output.Rdata')
+load(file = '~/data/step1-output.Rdata')
 colnames(dat)
 dat[1:4,1:4]
 
@@ -247,7 +247,7 @@ library(ggplot2)
 library(clusterProfiler)
 library(GSEABase) 
 # 这里载入前面下载到的GEO数据集，看前面推文即可
-load(file = '~/tmp/step1-output.Rdata')
+load(file = '~/data/step1-output.Rdata')
 colnames(dat)
 dat[1:4,1:4] 
 
@@ -288,5 +288,6 @@ tail(geneList)
   gseaplot(go_bp_gsea, geneSetID = rownames(go_bp_gsea[1,]))
   gseaplot(go_bp_gsea, geneSetID = "GO:0006959")
   gseaplot(go_bp_gsea, geneSetID = "GO:0030595")
-  tmp=go_bp_gsea@result
-  table(tmp$pvalue<0.01)
+  data=go_bp_gsea@result
+  table(data$pvalue<0.01)
+  
